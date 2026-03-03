@@ -1,1 +1,8 @@
 
+graph LR
+    A[Ordered Sections] --> B{Merge & Validate}
+    B --> C{Improve Clarity?}
+    C -->|Yes| D[Diagram Decision<br/>≤ 3 images]
+    C -->|No| E[Finalize]
+    D --> E
+    D -.-> F[Image Generation<br/>Graceful fallback]
