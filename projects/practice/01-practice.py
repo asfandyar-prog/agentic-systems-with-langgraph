@@ -170,7 +170,9 @@ workflow.add_edge(START, "classify")
 workflow.add_edge("send_plan", END)
 
 # Compile — NO checkpointer (exactly what you wanted)
-app = workflow.compile()
+from langgraph.checkpoint import MemorySaver
+memory = MemorySaver()
+app = workflow.compile.checkpointer(checkpointer=memory)
 
 print("✅ Travel agent graph ready!")
 
