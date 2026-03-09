@@ -186,3 +186,29 @@ initial_state = {
 
 result = app.invoke(initial_state)
 print(result)
+
+
+
+def classify_travel_request(state:TravelPlan)->Command:
+    print(f"classifying request for user {state['user_id']}")
+    
+
+    parsed={
+        "destination":"Paris",
+        "dates":{"start":"2025-06-01","end":"2025-06-05"},
+        "budget":2500
+    }
+
+    if not parsed["destination"] or not parsed["dates"]:
+        next_node = "human_review"      # missing info → ask user
+    else:
+        next_node = "search"            # ready to search flights/hotels    
+
+    return Command(
+        update={
+            "destination": parsed["destination"],
+            "dates": parsed["dates"],
+            "budget": parsed["budget"]
+        },
+        goto=next_node
+    )
