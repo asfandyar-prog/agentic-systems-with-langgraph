@@ -32,3 +32,28 @@ graph_builder= StateGraph(State)
 graph_builder.add_node("node-1",call_subgraph)
 graph_builder.add_edge(START,"node-1")
 graph=graph_builder.compile()
+
+
+# example with different State schemas
+
+from typing import TypedDict
+from langgraph.graph.state import StateGraph,START,END
+
+class SubGraphState(TypedDict):
+    #Note that none of these fielsd keys are shared with the parent graph state
+    bar:str
+    baz:str 
+
+def sub_graph_node_1(state:SubGraphState):
+    return {"bar":"hello world" +state["bar"],"baz":"baz value"}
+
+def sub_graph_node_2(state:SubGraphState):
+    return {"bar":state["bar"] + state["baz"]}
+
+subgraph_builder=StateGraph(SubGraphState)
+subgraph_builder.add_node("node-1",sub_graph_node_1)
+subgraph_builder.add_node("node-2",sub_graph_node_2 )
+subgraph_builder.add_edge(START,"node-1")
+subgraph_builder.add_edge("node-1","node-2")    
+subgraph_builder.add_edge("node-2",END)
+subgraph=subgraph_builder.compile() 
