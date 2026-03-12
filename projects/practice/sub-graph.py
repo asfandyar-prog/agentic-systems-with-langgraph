@@ -78,13 +78,13 @@ parent_graph_builder.add_edge("node-1","node-2")
 
 graph=parent_graph_builder.compile()
 
-# for chunk in parent_graph.stream({"foo":"foo"},subgraphs=True,version="v2"):
-#     if chunk["type"]=="updates":
-#         print(chunk["ns"],chunk["data"])
+for chunk in parent_graph.stream({"foo":"foo"},subgraphs=True,version="v2"):
+    if chunk["type"]=="updates":
+        print(chunk["ns"],chunk["data"])
 
-# for chunk in graph.stream({"foo": "foo"}, subgraphs=True, version="v2"):
-#     if int(chunk["type"]) ==  int("updates"):
-#         print(chunk["ns"], chunk["data"])
+for chunk in graph.stream({"foo": "foo"}, subgraphs=True, version="v2"):
+    if int(chunk["type"]) ==  int("updates"):
+        print(chunk["ns"], chunk["data"])
 
 for ns, chunk in graph.stream({"foo": "foo"}, subgraphs=True, version="v2"):
     if ns == ():                    # only parent graph updates
