@@ -52,31 +52,18 @@ def images_zip(images_dir: Path) -> Optional[bytes]:
     return buf.getvalue()
 
 
-def try_stream(graph_app, inputs: Dict[str, Any]) -> Iterator[Tuple[str, Any]]:
+def stream_graph(graph_app, inputs: Dict[str, Any]) -> Iterator[Tuple[str, Any]]:
     """
-    Stream graph progress if available; else invoke.
-    Yields ("updates"/"values"/"final", payload).
+    Run the graph once, streaming progress.
+    Yields ("updates", payload) per node, then ("final", state) from the last "values" chunk.
     """
-    try:
-        for step in graph_app.stream(inputs, stream_mode="updates"):
-            yield ("updates", step)
-        out = graph_app.invoke(inputs)
-        yield ("final", out)
-        return
-    except Exception:
-        pass
-
-    try:
-        for step in graph_app.stream(inputs, stream_mode="values"):
-            yield ("values", step)
-        out = graph_app.invoke(inputs)
-        yield ("final", out)
-        return
-    except Exception:
-        pass
-
-    out = graph_app.invoke(inputs)
-    yield ("final", out)
+    final_state = None
+    for mode, chunk in graph_app.stream(inputs, stream_mode=["updates", "values"]):
+        if mode == "updates":
+            yield ("updates", chunk)
+        else:
+            final_state = chunk
+    yield ("final", final_state)
 
 
 def extract_latest_state(current_state: Dict[str, Any], step_payload: Any) -> Dict[str, Any]:
@@ -295,8 +282,8 @@ if run_btn:
     current_state: Dict[str, Any] = {}
     last_node = None
 
-    for kind, payload in try_stream(app, inputs):
-        if kind in ("updates", "values"):
+    for kind, payload in stream_graph(app, inputs):
+        if kind == "updates":
             node_name = None
             if isinstance(payload, dict) and len(payload) == 1 and isinstance(next(iter(payload.values())), dict):
                 node_name = next(iter(payload.keys()))
