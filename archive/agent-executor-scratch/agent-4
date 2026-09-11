@@ -1,0 +1,38 @@
+from typing import TypedDict,Union,List
+from langgraph.graph import StateGraph,START,END
+import os
+from dotenv import load_dotenv
+from langchain_groq import ChatGroq
+from langchain_core.messages import HumanMessage,AIMessage
+
+load_dotenv()
+
+class AgentState(TypedDict):
+    messages=List[Union[HumanMessage,AIMessage]]
+
+llm=ChatGroq(model="llama-3.3-70b-versatile")
+
+def process(state:AgentState)->AgentState:
+    """This node will process the user input and will call the llm"""
+    response=llm.invoke(state['messages'])
+
+    state["messages"].append(AIMessage(content=response.content))
+
+    print(f"\nAI: {response.content}")
+    print("CURRENT STATE : ",state['messages'])
+    return state        
+
+graph=StateGraph(AgentState)
+graph.add_node("process",process)
+graph.add_edge(START,"process")
+graph.add_edge("process",END)
+app=graph.compile()
+
+conversation_history=[]
+user_input=input("Enter: ")
+while user_input != "exit":
+    conversaton_history.append(HumanMessage(content=user_input))
+    result=app.invoke({'messages':conversaton_history})
+    print(result['messages'])
+    conversaton_history=result['messages']
+    user_input = input("Enter : ")

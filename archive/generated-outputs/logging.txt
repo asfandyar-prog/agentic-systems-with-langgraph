@@ -1,0 +1,11 @@
+Your Conversation Log:
+you: hey how are you i am asfand yar
+AI: Hello Asfand Yar, I'm doing well, thanks for asking. It's nice to meet you. Is there something I can help you with or would you like to chat?
+
+you: who am i
+AI: You are Asfand Yar, the person I'm currently chatting with. If you'd like to tell me more about yourself, I'm all ears! What do you do, or what are your interests?
+
+you: perfect
+AI: Glad I got it right. Now that we've got the introductions out of the way, is there something specific you'd like to talk about or ask me? I'm here to help or just chat if you'd like. What's on your mind, Asfand Yar?
+
+End of Conversation
