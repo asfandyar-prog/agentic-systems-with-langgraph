@@ -85,16 +85,16 @@ def bundle_zip(md_text: str, md_filename: str, images_dir: Path) -> bytes:
     return buf.getvalue()
 
 
-def try_stream(graph_app, inputs: Dict[str, Any]) -> Iterator[Tuple[str, Any]]:
-    try:
-        for step in graph_app.stream(inputs, stream_mode="updates"):
-            yield ("updates", step)
-        yield ("final", graph_app.invoke(inputs))
-        return
-    except Exception:
-        pass
-
-    yield ("final", graph_app.invoke(inputs))
+def stream_graph(graph_app, inputs: Dict[str, Any]) -> Iterator[Tuple[str, Any]]:
+    # One graph run: "updates" chunks drive the progress UI, and the last
+    # "values" chunk is the final state (what invoke() would have returned).
+    final_state = None
+    for mode, chunk in graph_app.stream(inputs, stream_mode=["updates", "values"]):
+        if mode == "updates":
+            yield ("updates", chunk)
+        else:
+            final_state = chunk
+    yield ("final", final_state)
 
 
 def extract_latest_state(current_state: Dict[str, Any], step_payload: Any) -> Dict[str, Any]:
@@ -161,7 +161,7 @@ if run_btn:
     current_state: Dict[str, Any] = {}
     last_node = None
 
-    for kind, payload in try_stream(app, inputs):
+    for kind, payload in stream_graph(app, inputs):
         if kind == "updates":
             node_name = None
             if isinstance(payload, dict) and len(payload) == 1:
